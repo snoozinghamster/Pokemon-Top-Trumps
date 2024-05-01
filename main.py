@@ -68,7 +68,7 @@ class NewGame:
             self.player_card_count = self.player_card_count - 1
             self.player_list = self.player_list[1:]
             self.player_turn = False #passes the turn to the pc
-            self.player_turn = True #this line needs to be deleted to let the pc play once that is coded
+            #self.player_turn = True #this line needs to be deleted to let the pc play once that is coded
 
 
 
@@ -82,6 +82,7 @@ class Pokemon:
         url = 'https://pokeapi.co/api/v2/pokemon/{}/'.format(self.id)
         response = requests.get(url)
         pokemon = response.json()
+        self.stats = {"name":pokemon['name']} #puts stats in dict
         self.name = pokemon['name']
         self.height = pokemon['height']
         self.weight = pokemon['weight']
@@ -113,6 +114,7 @@ while running: #game
     # for loop through the event queue
     for event in pygame.event.get():
         # Check for KEYDOWN event
+        stat_selected = "None"
         if event.type == KEYDOWN:
             # If the Esc key is pressed, then exit the main loop
             if event.key == K_ESCAPE:
@@ -121,8 +123,8 @@ while running: #game
         elif event.type == QUIT:
             running = False
         #check for mouse clicks on the various buttons
+
         elif event.type == pygame.MOUSEBUTTONDOWN and game.player_turn is True:  # if mouse clicked
-            stat_selected = "None"
             if mouse[0] >= buttons["height"][0] and mouse[0] <= buttons["height"][2]:
                 if mouse[1] >= buttons["height"][1] and mouse[1] <= buttons["height"][3]:
                     stat_selected = "height"
@@ -146,22 +148,27 @@ while running: #game
                     player_result = player_pokemon.base_attack
                     opponent_result = opponent_pokemon.base_attack
             print (stat_selected)
-            if stat_selected != "None":
-                print("test")
-                print ("player result: ",str(player_result), "opponent result: ", str(opponent_result))
-                game.compareStats(player_result,opponent_result)
-                print(game.player_list)
-                print(game.opponent_list)
-                if len(game.player_list) == 0:
-                    game_over = True
-                    result = "Loser..."
-                elif len(game.opponent_list) == 0:
-                    game_over = True
-                    result = "WINNER!"
-                else:
-                    player_pokemon = Pokemon(game.player_list[0])
-                    opponent_pokemon = Pokemon(game.opponent_list[0])
-                    print (player_pokemon.name)
+        elif event.type == pygame.MOUSEBUTTONDOWN and game.player_turn is False:
+            stat_options = ["height", "weight", "hp", "attack", "defence"]
+            stat_selected = random.choice(stat_options)
+            print(stat_selected)
+        if stat_selected != "None":
+            print("test")
+            print ("player result: ",str(player_result), "opponent result: ", str(opponent_result))
+            game.compareStats(player_result,opponent_result)
+            print(game.player_list)
+            print(game.opponent_list)
+            if len(game.player_list) == 0:
+                game_over = True
+                result = "Loser..."
+            elif len(game.opponent_list) == 0:
+                game_over = True
+                result = "WINNER!"
+            else:
+                player_pokemon = Pokemon(game.player_list[0])
+                opponent_pokemon = Pokemon(game.opponent_list[0])
+                print (player_pokemon.name)
+
     screen.fill("yellow")
 
     # track mouse
