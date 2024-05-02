@@ -33,6 +33,7 @@ buttons = {"height": (SCREEN_WIDTH / 2 - 150, SCREEN_HEIGHT / 2 + 100, SCREEN_WI
 
 class NewGame:
     def __init__(self):
+        print ("Starting a new game with 5 cards each")
         self.player_card_count = 5
         self.opponent_card_count = 5
         self.player_list,self.opponent_list = card_list(self.player_card_count)
@@ -68,10 +69,6 @@ class NewGame:
             self.player_turn = False #passes the turn to the pc
             #self.player_turn = True #this line needs to be deleted to let the pc play once that is coded
 
-
-
-
-
 class Pokemon:
     def __init__(self, card_id):
         #initialise a pokemon based on the id. would be nice to add shiny mechanics
@@ -85,14 +82,14 @@ class Pokemon:
         self.weight = pokemon['weight']
         self.base_image_url = pokemon['sprites']['front_default']
         self.base_hp = pokemon['stats'][0]['base_stat']
-        self.base_attack = pokemon['stats'][1]['base_stat'] #added these, would be cool to use in some way
+        self.base_attack = pokemon['stats'][1]['base_stat']
         self.base_defence = pokemon['stats'][2]['base_stat']
+        self.stat_summary = {"height":pokemon['height'],"weight":pokemon['weight'],"hp":pokemon['stats'][0]['base_stat'],"attack":pokemon['stats'][1]['base_stat'],"defence":pokemon['stats'][2]['base_stat']}
         #create the card image
         img_response = requests.get(self.base_image_url)
         self.surf = pygame.image.load(BytesIO(img_response.content)).convert()
         self.surf.set_colorkey((0, 0, 0), RLEACCEL)
         self.surf = pygame.transform.scale(self.surf, (400, 400))
-
 
 def card_list(number_of_cards):
     #generates list of cards. prevents dulicate cards, and splits into player and pc cards
@@ -112,13 +109,13 @@ def card_list(number_of_cards):
 
     return player_list, pc_list
 
-
-
 game = NewGame()
 game_over = False
 player_pokemon = Pokemon(game.player_list[0])
 opponent_pokemon = Pokemon(game.opponent_list[0])
-
+result_text_1 = ""
+result_text_2 = ""
+turn_taken = ""
 while running: #game
     # for loop through the event queue
     for event in pygame.event.get():
@@ -137,32 +134,25 @@ while running: #game
             if mouse[0] >= buttons["height"][0] and mouse[0] <= buttons["height"][2]:
                 if mouse[1] >= buttons["height"][1] and mouse[1] <= buttons["height"][3]:
                     stat_selected = "height"
-                    player_result = player_pokemon.height
-                    opponent_result = opponent_pokemon.height
                 elif mouse[1] >= buttons["defence"][1] and mouse[1] <= buttons["defence"][3]:
                     stat_selected = "defence"
-                    player_result = player_pokemon.base_defence
-                    opponent_result = opponent_pokemon.base_defence
                 elif mouse[1] >= buttons["hp"][1] and mouse[1] <= buttons["hp"][3]:
                     stat_selected = "hp"
-                    player_result = player_pokemon.base_hp
-                    opponent_result = opponent_pokemon.base_hp
             elif mouse[0] >= buttons["weight"][0] and mouse[0] <= buttons["weight"][2]:
                 if mouse[1] >= buttons["weight"][1] and mouse[1] <= buttons["weight"][3]:
                     stat_selected = "weight"
-                    player_result = player_pokemon.weight
-                    opponent_result = opponent_pokemon.weight
                 elif mouse[1] >= buttons["attack"][1] and mouse[1] <= buttons["attack"][3]:
                     stat_selected = "attack"
-                    player_result = player_pokemon.base_attack
-                    opponent_result = opponent_pokemon.base_attack
-            print (stat_selected)
+            turn_taken = "Player"
         elif event.type == pygame.MOUSEBUTTONDOWN and game.player_turn is False:
             stat_options = ["height", "weight", "hp", "attack", "defence"]
             stat_selected = random.choice(stat_options)
-            print(stat_selected)
+            turn_taken = "Opponent"
+        #need dict to assign stats
         if stat_selected != "None":
-            print("test")
+            #get stats from dict
+            player_result = player_pokemon.stat_summary[stat_selected]
+            opponent_result = opponent_pokemon.stat_summary[stat_selected]
             print ("player result: ",str(player_result), "opponent result: ", str(opponent_result))
             game.compareStats(player_result,opponent_result)
             print(game.player_list)
@@ -178,34 +168,35 @@ while running: #game
                 opponent_pokemon = Pokemon(game.opponent_list[0])
                 print (player_pokemon.name)
 
-    screen.fill("yellow")
+    screen.fill("pink")
 
     # track mouse
     mouse = pygame.mouse.get_pos()
 
     if game_over is False:
-        if mouse[0] >= buttons["height"][0] and mouse[0] <= buttons["height"][2]:
-            if mouse[1] >= buttons["height"][1] and mouse[1] <= buttons["height"][3]:
-                pygame.draw.rect(screen, "blue", (buttons["height"][0], buttons["height"][1],
-                                                  buttons["height"][2] - buttons["height"][0],
-                                                  buttons["height"][3] - buttons["height"][1]))
-            elif mouse[1] >= buttons["defence"][1] and mouse[1] <= buttons["defence"][3]:
-                pygame.draw.rect(screen, "blue", (
-                buttons["defence"][0], buttons["defence"][1], buttons["defence"][2] - buttons["defence"][0],
-                buttons["defence"][3] - buttons["defence"][1]))
-            elif mouse[1] >= buttons["hp"][1] and mouse[1] <= buttons["hp"][3]:
-                pygame.draw.rect(screen, "blue", (
-                buttons["hp"][0], buttons["hp"][1], buttons["hp"][2] - buttons["hp"][0],
-                buttons["hp"][3] - buttons["hp"][1]))
-        elif mouse[0] >= buttons["weight"][0] and mouse[0] <= buttons["weight"][2]:
-            if mouse[1] >= buttons["weight"][1] and mouse[1] <= buttons["weight"][3]:
-                pygame.draw.rect(screen, "blue", (
-                buttons["weight"][0], buttons["weight"][1], buttons["weight"][2] - buttons["weight"][0],
-                buttons["weight"][3] - buttons["weight"][1]))
-            elif mouse[1] >= buttons["attack"][1] and mouse[1] <= buttons["attack"][3]:
-                pygame.draw.rect(screen, "blue", (
-                buttons["attack"][0], buttons["attack"][1], buttons["attack"][2] - buttons["attack"][0],
-                buttons["attack"][3] - buttons["attack"][1]))
+        if game.player_turn is True:
+            if mouse[0] >= buttons["height"][0] and mouse[0] <= buttons["height"][2]:
+                if mouse[1] >= buttons["height"][1] and mouse[1] <= buttons["height"][3]:
+                    pygame.draw.rect(screen, "blue", (buttons["height"][0], buttons["height"][1],
+                                                      buttons["height"][2] - buttons["height"][0],
+                                                      buttons["height"][3] - buttons["height"][1]))
+                elif mouse[1] >= buttons["defence"][1] and mouse[1] <= buttons["defence"][3]:
+                    pygame.draw.rect(screen, "blue", (
+                    buttons["defence"][0], buttons["defence"][1], buttons["defence"][2] - buttons["defence"][0],
+                    buttons["defence"][3] - buttons["defence"][1]))
+                elif mouse[1] >= buttons["hp"][1] and mouse[1] <= buttons["hp"][3]:
+                    pygame.draw.rect(screen, "blue", (
+                    buttons["hp"][0], buttons["hp"][1], buttons["hp"][2] - buttons["hp"][0],
+                    buttons["hp"][3] - buttons["hp"][1]))
+            elif mouse[0] >= buttons["weight"][0] and mouse[0] <= buttons["weight"][2]:
+                if mouse[1] >= buttons["weight"][1] and mouse[1] <= buttons["weight"][3]:
+                    pygame.draw.rect(screen, "blue", (
+                    buttons["weight"][0], buttons["weight"][1], buttons["weight"][2] - buttons["weight"][0],
+                    buttons["weight"][3] - buttons["weight"][1]))
+                elif mouse[1] >= buttons["attack"][1] and mouse[1] <= buttons["attack"][3]:
+                    pygame.draw.rect(screen, "blue", (
+                    buttons["attack"][0], buttons["attack"][1], buttons["attack"][2] - buttons["attack"][0],
+                    buttons["attack"][3] - buttons["attack"][1]))
 
         #show card count
         player_cards_remaining = game.player_card_count
@@ -249,6 +240,38 @@ while running: #game
         #opponent card
         #add display of opponent card. need button to progress onto next card.
 
+        if turn_taken == "Player" and stat_selected != "None":
+            print("round complete")
+            result_text_1 = "You Chose: " + str(stat_selected) +" : " + str(player_result)
+            result_text_2 =  "Enemy Score: " + str(opponent_result)
+        elif turn_taken == "Opponent" and stat_selected != "None":
+            print("round complete")
+            result_text_1 = "Your Score: " + str(player_result)
+            result_text_2 = "Enemy Chose: " + str(stat_selected) + " : " + str(opponent_result)
+        if game.player_turn is True:
+            result_text_3 = "Click to select a stat"
+        elif game.player_turn is False:
+            result_text_3 = "Lost! Opponents turn to select, click anywhere"
+        result_text_1_display = stats_font.render(result_text_1, False, (0, 0, 0))
+        screen.blit(result_text_1_display, (SCREEN_WIDTH / 2 - 450, SCREEN_HEIGHT / 2 + 150))
+        result_text_2_display = stats_font.render(result_text_2, False, (0, 0, 0))
+        screen.blit(result_text_2_display, (SCREEN_WIDTH / 2 - 450, SCREEN_HEIGHT / 2 + 200))
+        result_text_3_display = stats_font.render(result_text_3, False, (0, 0, 0))
+        screen.blit(result_text_3_display, (SCREEN_WIDTH / 2 - 450, SCREEN_HEIGHT / 2 + 250))
+
+        """
+        winner/loser
+        
+        if playter choice
+        you chose: stat score
+        Enemy score: score
+        
+        if enemy choice
+        your score: score
+        enemy chose: stat : scpre
+        
+        your turn / enemy turn (click to play)
+        """
 
     else:
         result_text = title_font.render(result, False, (0, 0, 0))
@@ -256,5 +279,5 @@ while running: #game
         screen.blit(result_text, result_rect)
     # refresh display
     pygame.display.flip()
-    clock.tick(30)  # limits FPS to 60
+    clock.tick(30)  # limits FPS to 30
 pygame.quit()
