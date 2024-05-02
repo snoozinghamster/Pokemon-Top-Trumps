@@ -36,13 +36,12 @@ class NewGame:
         self.player_card_count = 5
         self.opponent_card_count = 5
         self.player_list,self.opponent_list = card_list(self.player_card_count)
-        self.table_list = card_list(10)
         self.player_turn = True #determine whether it is the players turn or the pc - start with player by default
 
     def compareStats(self,player,pc):
         #take the player value and compare with the pc value. grant the winner the losers card, add to the end of their list. in a draw put but players card to the end
         if int(player) > int(pc):
-            print("winner")
+            print("Player Won")
             # take card 0 from opponent, put on end of list, put player card 0 on end of list
             self.player_card_count = self.player_card_count + 1
             self.player_list.append(self.opponent_list[0])
@@ -52,14 +51,14 @@ class NewGame:
             self.opponent_list = self.opponent_list[1:]
             self.player_turn = True
         elif int(player) == int(pc):
-            print("draw")
+            print("Draw")
             # take first card put to back (not correct handling of a draw, should be go to middle and next winner gains both
             self.player_list.append(self.player_list[0])
             self.player_list = self.player_list[1:]
             self.opponent_list.append(self.opponent_list[0])
             self.opponent_list = self.opponent_list[1:]
         else:
-            print("loser")
+            print("Player Lost")
             self.opponent_card_count = self.opponent_card_count + 1
             self.opponent_list.append(self.player_list[0])
             self.opponent_list.append(self.opponent_list[0])
@@ -109,6 +108,8 @@ def card_list(number_of_cards):
                 id_list.append(id)
     player_list = id_list[:number_of_cards]
     pc_list = id_list[number_of_cards:]
+    print("Player and Opponent Card Lists Generated: \n Player List: {} \n PC List: {}".format(player_list,pc_list))
+
     return player_list, pc_list
 
 
