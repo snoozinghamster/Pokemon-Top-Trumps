@@ -35,8 +35,7 @@ class NewGame:
     def __init__(self):
         self.player_card_count = 5
         self.opponent_card_count = 5
-        self.player_list = card_list(self.player_card_count)
-        self.opponent_list = card_list(self.opponent_card_count)
+        self.player_list,self.opponent_list = card_list(self.player_card_count)
         self.table_list = card_list(10)
         self.player_turn = True #determine whether it is the players turn or the pc - start with player by default
 
@@ -82,7 +81,6 @@ class Pokemon:
         url = 'https://pokeapi.co/api/v2/pokemon/{}/'.format(self.id)
         response = requests.get(url)
         pokemon = response.json()
-        self.stats = {"name":pokemon['name']} #puts stats in dict
         self.name = pokemon['name']
         self.height = pokemon['height']
         self.weight = pokemon['weight']
@@ -98,11 +96,21 @@ class Pokemon:
 
 
 def card_list(number_of_cards):
-    #generates list of cards. doesnt currently prevent getting same card twice
+    #generates list of cards. prevents dulicate cards, and splits into player and pc cards
     id_list = []
-    for i in range(0, number_of_cards):
-        id_list.append(random.randint(1, 151))
-    return id_list
+    while True:
+        if len(id_list) == number_of_cards * 2:
+            break
+        else:
+            id = random.randint(1, 151)
+            if id in id_list:
+                continue
+            else:
+                id_list.append(id)
+    player_list = id_list[:number_of_cards]
+    pc_list = id_list[number_of_cards:]
+    return player_list, pc_list
+
 
 
 game = NewGame()
