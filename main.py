@@ -38,6 +38,7 @@ class NewGame:
         self.opponent_card_count = 5
         self.player_list,self.opponent_list = card_list(self.player_card_count)
         self.player_turn = True #determine whether it is the players turn or the pc - start with player by default
+        self.first_round = True
 
     def compareStats(self,player,pc):
         #take the player value and compare with the pc value. grant the winner the losers card, add to the end of their list. in a draw put but players card to the end
@@ -90,6 +91,8 @@ class Pokemon:
         self.surf = pygame.image.load(BytesIO(img_response.content)).convert()
         self.surf.set_colorkey((0, 0, 0), RLEACCEL)
         self.surf = pygame.transform.scale(self.surf, (400, 400))
+        self.mini = self.surf
+        self.mini = pygame.transform.scale(self.surf, (200, 200))
 
 def card_list(number_of_cards):
     #generates list of cards. prevents dulicate cards, and splits into player and pc cards
@@ -143,7 +146,9 @@ while running: #game
                     stat_selected = "weight"
                 elif mouse[1] >= buttons["attack"][1] and mouse[1] <= buttons["attack"][3]:
                     stat_selected = "attack"
+
             turn_taken = "Player"
+
         elif event.type == pygame.MOUSEBUTTONDOWN and game.player_turn is False:
             stat_options = ["height", "weight", "hp", "attack", "defence"]
             stat_selected = random.choice(stat_options)
@@ -151,8 +156,11 @@ while running: #game
         #need dict to assign stats
         if stat_selected != "None":
             #get stats from dict
+            game.first_round = False
             player_result = player_pokemon.stat_summary[stat_selected]
             opponent_result = opponent_pokemon.stat_summary[stat_selected]
+            old_player_card = player_pokemon
+            old_opponent_card = opponent_pokemon
             print ("player result: ",str(player_result), "opponent result: ", str(opponent_result))
             game.compareStats(player_result,opponent_result)
             print(game.player_list)
@@ -238,6 +246,40 @@ while running: #game
         screen.blit(hp_text, (SCREEN_WIDTH / 2 - 150, SCREEN_HEIGHT / 2 + 200))
 
         #opponent card
+        if game.first_round is False:
+            if game.player_turn is True:
+                player_colour = "green"
+                opponent_colour = "red"
+            else:
+                player_colour = "red"
+                opponent_colour = "green"
+            pygame.draw.rect(screen, player_colour, (SCREEN_WIDTH / 2 - 500, 150, 150, 250), width=10, border_radius=20)
+
+            name_text = stats_font.render("You", False, (0, 0, 0))
+            name_rect = name_text.get_rect(center=(SCREEN_WIDTH / 2 - 350 - 75, 180))
+            screen.blit(name_text, name_rect)
+
+            name_text = stats_font.render(old_player_card.name.title(), False, (0, 0, 0))
+            name_rect = name_text.get_rect(center=(SCREEN_WIDTH / 2 - 350 - 75, 180+50))
+            screen.blit(name_text, name_rect)
+
+            screen.blit(old_player_card.mini, ((SCREEN_WIDTH / 2 - 425-100), (SCREEN_HEIGHT / 2 -175+50)))
+
+            #opponent
+            pygame.draw.rect(screen, opponent_colour, (SCREEN_WIDTH / 2 - 500+150, 150, 150, 250), width=10, border_radius=20)
+
+            name_text = stats_font.render("Enemy", False, (0, 0, 0))
+            name_rect = name_text.get_rect(center=(SCREEN_WIDTH / 2 - 350 - 75+150, 180))
+            screen.blit(name_text, name_rect)
+
+            name_text = stats_font.render(old_opponent_card.name.title(), False, (0, 0, 0))
+            name_rect = name_text.get_rect(center=(SCREEN_WIDTH / 2 - 350 - 75+150, 180 + 50))
+            screen.blit(name_text, name_rect)
+
+            screen.blit(old_opponent_card.mini, ((SCREEN_WIDTH / 2 - 425 - 100+150), (SCREEN_HEIGHT / 2 - 175 + 50)))
+
+
+
         #add display of opponent card. need button to progress onto next card.
 
         if turn_taken == "Player" and stat_selected != "None":
@@ -253,11 +295,11 @@ while running: #game
         elif game.player_turn is False:
             result_text_3 = "Lost! Opponents turn to select, click anywhere"
         result_text_1_display = stats_font.render(result_text_1, False, (0, 0, 0))
-        screen.blit(result_text_1_display, (SCREEN_WIDTH / 2 - 450, SCREEN_HEIGHT / 2 + 150))
+        screen.blit(result_text_1_display, (SCREEN_WIDTH / 2 - 450, SCREEN_HEIGHT / 2 + 175))
         result_text_2_display = stats_font.render(result_text_2, False, (0, 0, 0))
-        screen.blit(result_text_2_display, (SCREEN_WIDTH / 2 - 450, SCREEN_HEIGHT / 2 + 200))
+        screen.blit(result_text_2_display, (SCREEN_WIDTH / 2 - 450, SCREEN_HEIGHT / 2 + 225))
         result_text_3_display = stats_font.render(result_text_3, False, (0, 0, 0))
-        screen.blit(result_text_3_display, (SCREEN_WIDTH / 2 - 450, SCREEN_HEIGHT / 2 + 250))
+        screen.blit(result_text_3_display, (SCREEN_WIDTH / 2 - 450, SCREEN_HEIGHT / 2 + 275))
 
         """
         winner/loser
